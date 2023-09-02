@@ -17,6 +17,12 @@ export function FormatarData(data, formato = FormatoData.PADRAO) {
             month: "2-digit",
         });
     }
+    else if ((formato = FormatoData.MES_ANO)) {
+        return data.toLocaleDateString("pt-br", {
+            month: "long",
+            year: "numeric"
+        });
+    }
     else if ((formato = FormatoData.PADRAO)) {
         return data.toLocaleDateString("pt-br");
     }
