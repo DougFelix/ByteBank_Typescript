@@ -1,4 +1,5 @@
 import { FormatarData } from "../utils/formatters.js";
+import { Armazenador } from "./Armazenador.js";
 import { FormatoData } from "./FormatoData.js";
 import { GrupoTransacao } from "./GrupoTransacao.js";
 import { ResumoTransacoes } from "./ResumoTransacoes.js";
@@ -6,11 +7,10 @@ import { TipoTransacao } from "./TipoTransacao.js";
 import { Transacao } from "./Transacao.js";
 
 export class Conta {
-  nome: string;
-  saldo: number = JSON.parse(localStorage.getItem("saldo")) || 0;
-  transacoes: Transacao[] =
-    JSON.parse(
-      localStorage.getItem("transacoes"),
+  protected nome: string;
+  protected saldo: number = Armazenador.Obter("saldo") || 0;
+  private transacoes: Transacao[] =
+    Armazenador.Obter(("transacoes"),
       (key: string, value: any) => {
         if (key === "data") {
           return new Date(value);
@@ -23,6 +23,10 @@ export class Conta {
     this.nome = nome;
   }
 
+  public GetTitular() {
+    return this.nome;
+  }
+
   GetSaldo() {
     return this.saldo;
   }
@@ -31,35 +35,35 @@ export class Conta {
     return new Date();
   }
 
-  Debitar(valor: number): void {
+  private Debitar(valor: number): void {
     if (valor <= 0) {
       throw new Error("O valor a ser debitado deve ser maior que zero!");
     }
     if (valor > this.saldo) {
       throw new Error("Saldo insuficiente!");
     }
-  
+
     this.saldo -= valor;
-    localStorage.setItem("saldo", this.saldo.toString());
+    Armazenador.Salvar("saldo", this.saldo.toString());
   }
-  
-  Depositar(valor: number): void {
+
+  private Depositar(valor: number): void {
     if (valor <= 0) {
       throw new Error("O valor a ser depositado deve ser maior que zero!");
     }
-  
+
     this.saldo += valor;
-    localStorage.setItem("saldo", this.saldo.toString());
+    Armazenador.Salvar("saldo", this.saldo.toString());
   }
 
   RegistrarTransacao(novaTransacao: Transacao): void {
     if (novaTransacao.tipoTransacao == TipoTransacao.DEPOSITO) {
-        this.Depositar(novaTransacao.valor);
+      this.Depositar(novaTransacao.valor);
     } else if (
       novaTransacao.tipoTransacao == TipoTransacao.TRANSFERENCIA ||
       novaTransacao.tipoTransacao == TipoTransacao.PAGAMENTO_BOLETO
     ) {
-        this.Debitar(novaTransacao.valor);
+      this.Debitar(novaTransacao.valor);
       novaTransacao.valor *= -1;
     } else {
       throw new Error(TipoTransacao.INVALIDO);
@@ -67,26 +71,24 @@ export class Conta {
 
     this.transacoes.push(novaTransacao);
     console.log(this.GetGruposTransacoes());
-    localStorage.setItem("transacoes", JSON.stringify(this.transacoes));
+    Armazenador.Salvar("transacoes", JSON.stringify(this.transacoes));
   }
 
   AgruparTransacoes(): ResumoTransacoes {
     const listaTransacoes: Transacao[] = structuredClone(this.transacoes);
     const resumoTransacoes: ResumoTransacoes = {
-        totalDepositos: 0,
-        totalPagamentosBoleto: 0,
-        totalTransferencias: 0
+      totalDepositos: 0,
+      totalPagamentosBoleto: 0,
+      totalTransferencias: 0,
     };
-    for(let transacao of listaTransacoes){
-        if(transacao.tipoTransacao === TipoTransacao.DEPOSITO){
-            resumoTransacoes.totalDepositos += transacao.valor
-        }
-        else if(transacao.tipoTransacao === TipoTransacao.PAGAMENTO_BOLETO){
-            resumoTransacoes.totalPagamentosBoleto += transacao.valor
-        }
-        else if(transacao.tipoTransacao === TipoTransacao.TRANSFERENCIA){
-            resumoTransacoes.totalTransferencias += transacao.valor
-        }
+    for (let transacao of listaTransacoes) {
+      if (transacao.tipoTransacao === TipoTransacao.DEPOSITO) {
+        resumoTransacoes.totalDepositos += transacao.valor;
+      } else if (transacao.tipoTransacao === TipoTransacao.PAGAMENTO_BOLETO) {
+        resumoTransacoes.totalPagamentosBoleto += transacao.valor;
+      } else if (transacao.tipoTransacao === TipoTransacao.TRANSFERENCIA) {
+        resumoTransacoes.totalTransferencias += transacao.valor;
+      }
     }
     return resumoTransacoes;
   }
@@ -118,7 +120,7 @@ export class Conta {
   }
 }
 
-
 const conta = new Conta("Joana da Silva Oliveira");
+console.log(conta.GetTitular());
 
 export default conta;

@@ -1,10 +1,11 @@
 import { FormatarData } from "../utils/formatters.js";
+import { Armazenador } from "./Armazenador.js";
 import { FormatoData } from "./FormatoData.js";
 import { TipoTransacao } from "./TipoTransacao.js";
 export class Conta {
     nome;
-    saldo = JSON.parse(localStorage.getItem("saldo")) || 0;
-    transacoes = JSON.parse(localStorage.getItem("transacoes"), (key, value) => {
+    saldo = Armazenador.Obter("saldo") || 0;
+    transacoes = Armazenador.Obter(("transacoes"), (key, value) => {
         if (key === "data") {
             return new Date(value);
         }
@@ -12,6 +13,9 @@ export class Conta {
     }) || [];
     constructor(nome) {
         this.nome = nome;
+    }
+    GetTitular() {
+        return this.nome;
     }
     GetSaldo() {
         return this.saldo;
@@ -27,14 +31,14 @@ export class Conta {
             throw new Error("Saldo insuficiente!");
         }
         this.saldo -= valor;
-        localStorage.setItem("saldo", this.saldo.toString());
+        Armazenador.Salvar("saldo", this.saldo.toString());
     }
     Depositar(valor) {
         if (valor <= 0) {
             throw new Error("O valor a ser depositado deve ser maior que zero!");
         }
         this.saldo += valor;
-        localStorage.setItem("saldo", this.saldo.toString());
+        Armazenador.Salvar("saldo", this.saldo.toString());
     }
     RegistrarTransacao(novaTransacao) {
         if (novaTransacao.tipoTransacao == TipoTransacao.DEPOSITO) {
@@ -50,14 +54,14 @@ export class Conta {
         }
         this.transacoes.push(novaTransacao);
         console.log(this.GetGruposTransacoes());
-        localStorage.setItem("transacoes", JSON.stringify(this.transacoes));
+        Armazenador.Salvar("transacoes", JSON.stringify(this.transacoes));
     }
     AgruparTransacoes() {
         const listaTransacoes = structuredClone(this.transacoes);
         const resumoTransacoes = {
             totalDepositos: 0,
             totalPagamentosBoleto: 0,
-            totalTransferencias: 0
+            totalTransferencias: 0,
         };
         for (let transacao of listaTransacoes) {
             if (transacao.tipoTransacao === TipoTransacao.DEPOSITO) {
@@ -92,4 +96,5 @@ export class Conta {
     }
 }
 const conta = new Conta("Joana da Silva Oliveira");
+console.log(conta.GetTitular());
 export default conta;
