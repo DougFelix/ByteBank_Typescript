@@ -5,7 +5,7 @@ import { TipoTransacao } from "./TipoTransacao.js";
 export class Conta {
     nome;
     saldo = Armazenador.Obter("saldo") || 0;
-    transacoes = Armazenador.Obter(("transacoes"), (key, value) => {
+    transacoes = Armazenador.Obter("transacoes", (key, value) => {
         if (key === "data") {
             return new Date(value);
         }
@@ -95,6 +95,16 @@ export class Conta {
         return gruposTransacoes;
     }
 }
+export class ContaPremium extends Conta {
+    RegistrarTransacao(transacao) {
+        if (transacao.tipoTransacao === TipoTransacao.DEPOSITO) {
+            console.log("Ganhou um bonus de 0,50 centavos!");
+            transacao.valor += 0.5;
+        }
+        super.RegistrarTransacao(transacao);
+    }
+}
 const conta = new Conta("Joana da Silva Oliveira");
+const contaPremium = new ContaPremium("Douglas");
 console.log(conta.GetTitular());
 export default conta;

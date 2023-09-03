@@ -8,16 +8,14 @@ import { Transacao } from "./Transacao.js";
 
 export class Conta {
   protected nome: string;
-  protected saldo: number = Armazenador.Obter("saldo") || 0;
+  protected saldo: number = Armazenador.Obter<number>("saldo") || 0;
   private transacoes: Transacao[] =
-    Armazenador.Obter(("transacoes"),
-      (key: string, value: any) => {
-        if (key === "data") {
-          return new Date(value);
-        }
-        return value;
+    Armazenador.Obter<Transacao[]>("transacoes", (key: string, value: any) => {
+      if (key === "data") {
+        return new Date(value);
       }
-    ) || [];
+      return value;
+    }) || [];
 
   constructor(nome: string) {
     this.nome = nome;
@@ -120,7 +118,18 @@ export class Conta {
   }
 }
 
+export class ContaPremium extends Conta {
+    RegistrarTransacao(transacao: Transacao) : void {
+        if(transacao.tipoTransacao === TipoTransacao.DEPOSITO){
+            console.log("Ganhou um bonus de 0,50 centavos!");
+            transacao.valor += 0.5;
+        }
+        super.RegistrarTransacao(transacao);
+    }
+}
+
 const conta = new Conta("Joana da Silva Oliveira");
+const contaPremium = new ContaPremium("Douglas");
 console.log(conta.GetTitular());
 
 export default conta;
