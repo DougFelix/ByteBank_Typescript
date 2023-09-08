@@ -1,5 +1,6 @@
 import { FormatarData } from "../utils/formatters.js";
 import { Armazenador } from "./Armazenador.js";
+import { ValidaDebito, ValidaDeposito } from "./Decorators.js";
 import { FormatoData } from "./FormatoData.js";
 import { GrupoTransacao } from "./GrupoTransacao.js";
 import { ResumoTransacoes } from "./ResumoTransacoes.js";
@@ -33,23 +34,14 @@ export class Conta {
     return new Date();
   }
 
+  @ValidaDebito
   private Debitar(valor: number): void {
-    if (valor <= 0) {
-      throw new Error("O valor a ser debitado deve ser maior que zero!");
-    }
-    if (valor > this.saldo) {
-      throw new Error("Saldo insuficiente!");
-    }
-
     this.saldo -= valor;
     Armazenador.Salvar("saldo", this.saldo.toString());
   }
 
+  @ValidaDeposito
   private Depositar(valor: number): void {
-    if (valor <= 0) {
-      throw new Error("O valor a ser depositado deve ser maior que zero!");
-    }
-
     this.saldo += valor;
     Armazenador.Salvar("saldo", this.saldo.toString());
   }

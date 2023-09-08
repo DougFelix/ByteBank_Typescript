@@ -1,5 +1,12 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 import { FormatarData } from "../utils/formatters.js";
 import { Armazenador } from "./Armazenador.js";
+import { ValidaDebito } from "./Decorators.js";
 import { FormatoData } from "./FormatoData.js";
 import { TipoTransacao } from "./TipoTransacao.js";
 export class Conta {
@@ -24,12 +31,6 @@ export class Conta {
         return new Date();
     }
     Debitar(valor) {
-        if (valor <= 0) {
-            throw new Error("O valor a ser debitado deve ser maior que zero!");
-        }
-        if (valor > this.saldo) {
-            throw new Error("Saldo insuficiente!");
-        }
         this.saldo -= valor;
         Armazenador.Salvar("saldo", this.saldo.toString());
     }
@@ -95,6 +96,9 @@ export class Conta {
         return gruposTransacoes;
     }
 }
+__decorate([
+    ValidaDebito
+], Conta.prototype, "Debitar", null);
 export class ContaPremium extends Conta {
     RegistrarTransacao(transacao) {
         if (transacao.tipoTransacao === TipoTransacao.DEPOSITO) {
